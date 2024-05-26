@@ -32,10 +32,23 @@ jobs:
         run: |
           docker buildx build --push --tag myacrregistry11.azurecr.io/myapp:${{ github.sha }} .
 
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Set up Kubernetes context
         run: |
           az aks get-credentials --resource-group DefaultResourceGroup-EUS --name myAKSCluster
 
-      - name: Deploy to AKS
+      - name: Install Helm
         run: |
-          kubectl apply -f deployment.yaml
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+      - name: Deploy to AKS with Helm
+        run: |
+          helm upgrade --install myapp ./helm-chart --set image.repository=myacrregistry11.azurecr.io/myapp,image.tag=${{ github.sha }}
