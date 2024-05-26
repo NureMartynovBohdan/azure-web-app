@@ -32,17 +32,9 @@ jobs:
         run: |
           docker buildx build --push --tag myacrregistry11.azurecr.io/myapp:${{ github.sha }} .
 
-      - name: Set up Kubernetes
-        uses: Azure/setup-kubectl@v1
-        with:
-          version: "latest"
-
-      - name: Set up AKS
-        uses: Azure/aks-set-context@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          cluster-name: myAKSCluster
-          resource-group: DefaultResourceGroup-EUS
+      - name: Set up Kubernetes context
+        run: |
+          az aks get-credentials --resource-group DefaultResourceGroup-EUS --name myAKSCluster
 
       - name: Deploy to AKS
         run: |
